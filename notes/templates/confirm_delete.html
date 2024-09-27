@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Delete Document</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Confirm Deletion</h1>
+    </header>
+
+    <main>
+        <p>Are you sure you want to delete the document: <strong>{{ document.title }}</strong>?</p>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit">Confirm Delete</button>
+            <a href="{% url 'home' %}">Cancel</a>
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ShareNotes</p>
+    </footer>
+</body>
+</html>
