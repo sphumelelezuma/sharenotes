@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Detail - ShareNotes</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1>ShareNotes</h1>
+        {% if user.is_authenticated %}
+            <p>Welcome, {{ user.username }}!</p>
+            <p><a href="{% url 'home' %}">Back to Home</a></p>
+            <p><a href="{% url 'logout' %}">Logout</a></p>
+        {% else %}
+            <p><a href="{% url 'login' %}">Login</a></p>
+            <p><a href="{% url 'register' %}">Register</a></p>
+        {% endif %}
+    </header>
+
+    <main>
+        <div class="post-detail">
+            <h2>{{ post.title }}</h2>
+            <p>{{ post.content }}</p>
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.image.name }}" class="post-image" />
+            {% endif %}
+            <p>Posted by: {{ post.author.username }} on {{ post.created_at }}</p>
+
+            <!-- Like and Comment Icons -->
+<!-- Like and Comment Icons -->
+<div class="post-interactions">
+    <span class="like-icon" onclick="toggleLike('{{ post.id }}')">
+        <img src="{% if has_liked %}{% static 'icons/heart_filled.png' %}{% else %}{% static 'icons/heart_outline.png' %}{% endif %}" 
+             alt="Like" class="like-btn small-icon" data-post-id="{{ post.id }}" />
+        <span id="like-count-{{ post.id }}" class="likes-count">{{ likes_count }}</span>
+    </span>
+
+    <span class="comment-icon" onclick="toggleComments('{{ post.id }}')">
+        <img src="{% static 'icons/comment.png' %}" alt="Comments" class="small-icon" />
+        <span>{{ comments.count }}</span>
+    </span>
+</div>
+
+
+<!-- Comments Section -->
+<div id="comments-section-{{ post.id }}" class="comments-section">
+    <h3>Comments</h3>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>{{ comment.author.username }}</strong>: {{ comment.content }}
+            </li>
+        {% empty %}
+            <li>No comments yet.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Add a new comment -->
+    {% if user.is_authenticated %}
+        <form action="{% url 'add_comment' post.id %}" method="post">
+            {% csrf_token %}
+            <textarea name="content" rows="2" placeholder="Add a comment..." required></textarea>
+            <button type="submit">Comment</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to add a comment.</p>
+    {% endif %}
+</div>
+
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ShareNotes</p>
+    </footer>
+
+    <script src="{% static 'js/post_detail.js' %}"></script>
+</body>
+
+</html>

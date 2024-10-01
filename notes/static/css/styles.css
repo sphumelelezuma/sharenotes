@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: white;
-    color: black;  /* Keep text black */
+    color: black;  
     margin: 0;
     padding: 0;
     line-height: 1.6;
@@ -10,17 +10,17 @@ body {
 /* Header section */
 header {
     text-align: center;
-    background-color: #f3e2e2; /* Neutral soft background */
+    background-color: #f3e2e2; 
     padding: 20px;
 }
 
 h1 {
-    color: black;  /* Keep title black */
+    color: black;  
 }
 
 /* Navigation Styling */
 nav ul {
-    list-style-type: none;  /* Remove bullet points */
+    list-style-type: none;  
     padding: 0;
     margin: 20px 0 10px;
     display: flex;
@@ -34,25 +34,25 @@ nav ul li {
 
 nav ul li a {
     text-decoration: none;
-    color: black;  /* Keep the nav links black */
-    background-color: #f0e4e2; /* Soft background color */
+    color: black;  
+    background-color: #f0e4e2; 
     padding: 10px 20px;
-    border-radius: 20px;  /* Rounded buttons for cuteness */
+    border-radius: 20px;  
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 nav ul li a:hover {
-    background-color: #ee72cb; /* Subtle pink hover effect */
-    color: white;  /* Change text to white on hover */
+    background-color: #ee72cb; 
+    color: white;  
 }
 
 /* Form styling */
 form {
     margin: 20px auto;
     padding: 20px;
-    background-color: #f0e4e2; /* Subtle neutral background for form */
+    background-color: #f0e4e2; 
     width: 80%;
-    max-width: 600px;  /* Set a maximum width for larger screens */
+    max-width: 600px;  
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -61,12 +61,12 @@ form input, form textarea {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #ccc; /* Neutral border color */
+    border: 1px solid #ccc; 
     border-radius: 5px;
 }
 
 form button {
-    background-color: black;  /* Changed from blue to black */
+    background-color: black;  
     color: white;
     padding: 10px 15px;
     border: none;
@@ -75,57 +75,95 @@ form button {
 }
 
 form button:hover {
-    background-color: #999999;  /* Subtle hover effect */
+    background-color: #999999;  
 }
 
 /* Posts and Documents */
 main {
     display: flex;
-    justify-content: center;  /* Centering the posts on the page */
+    justify-content: center;  
     padding: 20px;
-    flex-wrap: wrap;  /* Allow items to wrap on smaller screens */
+    flex-wrap: wrap;  
 }
 
 .post, .document {
-    background-color: #ead2cc;  /* Soft background for posts */
+    background-color: #ead2cc;  
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin: 10px;
     padding: 15px;
     width: 300px;
-    max-width: 100%;  /* Keep posts responsive */
+    max-width: 100%;  
 }
 
 h1, h2, h3 {
-    text-align: center;  /* Center all headings */
+    text-align: center;  
 }
 
 /* Footer Styling */
 footer {
     text-align: center;
     padding: 10px;
-    background-color: #f0e4e2;  /* Neutral footer background */
-    color: black;  /* Black text */
+    background-color: #f0e4e2;  
+    color: black;  
 }
 
 img {
-    max-width: 100%;  /* Scale down for smaller screens */
-    height: auto;     /* Maintain aspect ratio */
+    max-width: 100%;  
+    height: auto;     
+}
+
+/* Reactions Section */
+.reactions {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;  /* Center items vertically */
+}
+
+.reaction-icon {
+    font-size: 1.5em;  /* Size of the heart icon */
+    cursor: pointer;  /* Cursor changes to pointer on hover */
+    transition: color 0.3s ease;  /* Smooth color transition */
+    margin-right: 10px;  /* Space between heart icon and reaction counter */
+}
+
+.reaction-icon.heart-active {
+    color: pink;  /* Color when heart is active (clicked) */
+}
+
+.reaction-counter {
+    font-size: 1em;  /* Standard size for reaction count */
+}
+
+/* Comments Section */
+.comments-section {
+    margin-top: 10px;
+}
+
+.comments-section h3 {
+    margin: 0;  
+}
+
+.comment {
+    border: 1px solid #ccc;  
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px 0;  
 }
 
 /* Media Queries for Responsiveness */
 @media (max-width: 768px) {
     nav ul {
-        flex-direction: column;  /* Stack navigation items on small screens */
-        margin: 0;  /* Remove margin for smaller screens */
+        flex-direction: column;  
+        margin: 0;  
     }
 
     .post, .document {
-        width: 90%;  /* Make posts and documents take more width on smaller screens */
+        width: 90%;  
     }
 
     form {
-        width: 95%;  /* Make the form width larger on mobile */
+        width: 95%;  
     }
 }
 
@@ -139,10 +177,62 @@ img {
     }
 
     form {
-        padding: 15px;  /* Reduce padding for forms */
+        padding: 15px;  /* Smaller padding for forms */
     }
 
-    .post, .document {
-        padding: 10px;  /* Reduce padding for posts/documents */
+    h1, h2, h3 {
+        font-size: 1.5em;  /* Adjust heading sizes for smaller screens */
     }
 }
+
+.small-icon {
+    width: 20px; /* Adjust the size to your preference */
+    height: 20px;
+}
+
+
+/* Adjustments for the Reaction Comment Container */
+.reaction-comment-container {
+    display: flex;  /* Use flexbox for alignment */
+    align-items: center;  /* Center items vertically */
+    margin-top: 10px;  /* Space above reactions section */
+}
+
+/* Individual Comment Button */
+.comment-button {
+    margin-left: 10px;  /* Space between heart icon and comment button */
+    padding: 5px 10px;  /* Button padding */
+    background-color: #eb6ac0;  /* Green background */
+    color: white;  /* White text */
+    border: none;  /* No border */
+    border-radius: 5px;  /* Rounded corners */
+    cursor: pointer;  /* Pointer on hover */
+    transition: background-color 0.3s ease;  /* Smooth background change */
+}
+
+/* Change background color on hover for comment button */
+.comment-button:hover {
+    background-color: #e214af;  /* Darker green on hover */
+}
+
+/* Responsive Adjustments for Reactions and Comments */
+@media (max-width: 768px) {
+    .reactions {
+        flex-direction: column;  /* Stack reactions on smaller screens */
+    }
+
+    .reaction-comment-container {
+        flex-direction: column;  /* Stack on smaller screens */
+    }
+
+    .reaction-comment-container span {
+        margin-bottom: 5px;  /* Space out items in stacked layout */
+    }
+}
+
+
+
+
+
+
+

@@ -1,21 +1,37 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json 
 from django.core.files.storage import FileSystemStorage
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from .utils import resize_image  # Import the resize_image function
-from .forms import PostForm, UserRegistrationForm, DocumentForm
-from .models import Post, Document
+from .forms import PostForm, UserRegistrationForm, DocumentForm, CommentForm
+from .models import Post, Document, Reaction, Comment, NestedComment
 
 
+@login_required 
 def home(request):
-    posts = Post.objects.all().order_by('-created_at')
+    posts = Post.objects.all().prefetch_related('comments', 'reactions').order_by('-created_at')
     documents = Document.objects.all().order_by('-id')
-    print(f'Posts: {posts}')
-    print(f'Documents: {documents}')
+
+    # Fetch user's reactions (specific to Post)
+    post_content_type = ContentType.objects.get_for_model(Post)
+    user_reactions = Reaction.objects.filter(user=request.user, content_type=post_content_type)
+
+    # Include comments and reaction counts for each post
+    for post in posts:
+        post.reaction_count = Reaction.objects.filter(content_type=post_content_type, object_id=post.id, is_active=True).count()
+        # Check if the user reacted to this post
+        post.user_reacted = user_reactions.filter(object_id=post.id, is_active=True).exists()
+
     return render(request, 'home.html', {'posts': posts, 'documents': documents})
+
+
 
 @login_required 
 def create_post(request):
@@ -108,3 +124,148 @@ def delete_document(request, document_id):
         document.delete()  # Delete the document
         return redirect('home')  # Redirect to home or another page after deletion
     return render(request, 'confirm_delete.html', {'document': document})  # Render a confirmation template
+
+
+@login_required
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    # Fetch related reactions for this post
+    post_content_type = ContentType.objects.get_for_model(Post)
+    reactions = Reaction.objects.filter(content_type=post_content_type, object_id=post.id)
+
+    likes_count = reactions.count()
+    comments = post.comments.all()
+
+    # Check if the user has liked the post
+    has_liked = reactions.filter(user=request.user).exists()
+
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comments': comments, 
+        'has_liked': has_liked,
+        'likes_count': likes_count,
+    })
+
+
+@login_required
+def toggle_reaction(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    content_type = ContentType.objects.get_for_model(Post)
+
+    # Check if the user has already reacted
+    reaction = Reaction.objects.filter(user=request.user, content_type=content_type, object_id=post.id).first()
+
+    if reaction:
+        # If the reaction already exists, deactivate it
+        reaction.is_active = not reaction.is_active
+        reaction.save()
+        response_message = "Reaction removed" if not reaction.is_active else "Reaction added"
+    else:
+        # Create a new reaction if it doesn't exist
+        reaction = Reaction(user=request.user, content_type=content_type, object_id=post.id)
+        reaction.save()
+        response_message = "Reaction added"
+
+    # Update the post's reaction count based on active reactions
+    reaction_count = Reaction.objects.filter(content_type=content_type, object_id=post.id, is_active=True).count()
+
+    return JsonResponse({
+        'message': response_message,
+        'total_reactions': reaction_count
+    })
+ 
+
+def get_reaction_count(post):
+    return Reaction.objects.filter(post=post, is_active=True).count()
+    
+
+def post_list(request):
+    posts = Post.objects.all()
+    posts_with_reaction_count = []
+
+    for post in posts:
+        reaction_count = Reaction.objects.filter(post=post, is_active=True).count()
+        posts_with_reaction_count.append({
+            'post': post,
+            'reaction_count': reaction_count,
+        })
+
+    return render(request, 'post_detail.html', {'posts': posts_with_reaction_count})
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+            return redirect('post_detail', post_id=post.id)
+    else:
+        form = CommentForm()
+
+    return render(request, 'add_comment.html', {'form': form}) 
+    
+
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, user=request.user)
+    if request.method == 'POST':
+        comment.delete()
+        return redirect('post_detail', post_id=comment.post.id)
+
+
+@login_required
+def like_post(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        content_type = ContentType.objects.get_for_model(Post)
+        existing_reaction = Reaction.objects.filter(user=request.user, content_type=content_type, object_id=post.id).first()
+
+        # Toggle the like status
+        if existing_reaction:
+            existing_reaction.delete()
+            liked = False
+        else:
+            Reaction.objects.create(
+                user=request.user,
+                content_type=content_type,
+                object_id=post.id
+            )
+            liked = True
+
+        # Get the updated likes count
+        likes_count = Reaction.objects.filter(content_type=content_type, object_id=post.id, is_active=True).count()
+
+        return JsonResponse({'likes_count': likes_count, 'liked': liked})
+
+
+
+@login_required
+def react_to_post(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+        user = request.user
+
+        # Check if a reaction already exists for this user and post
+        reaction, created = Reaction.objects.get_or_create(user=user, post=post)
+
+        if not created:
+            # If the reaction already exists, toggle its active state
+            reaction.is_active = not reaction.is_active
+            reaction.save()
+        else:
+            # If the reaction was just created, set it to active
+            reaction.is_active = True
+
+        # Update the post's reaction count based on active reactions
+        post.reactions_count = post.reactions.filter(is_active=True).count()
+        post.save()
+
+        # Return the updated reaction count
+        return JsonResponse({"reactions_count": post.reactions_count})
+
+    return JsonResponse({"error": "Invalid request method."}, status=400)

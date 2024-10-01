@@ -1,7 +1,16 @@
 from django import forms
-from .models import Post, Document
+from .models import Post, Document, Comment 
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Add a comment...'})
+        }
 
 
 class DocumentForm(forms.ModelForm):
